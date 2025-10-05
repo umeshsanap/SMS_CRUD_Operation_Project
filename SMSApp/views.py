@@ -5,11 +5,11 @@ from rest_framework import status
 from .models import StudentManagement
 from .serializers import StudentManagementSerializer
 
-class StudentDetails(GenericAPIView):
+# List all students
+class StudentListAPI(GenericAPIView):
     serializer_class = StudentManagementSerializer
     queryset = StudentManagement.objects.all()
 
-    # GET all students
     def get(self, request):
         try:
             students = self.get_queryset()
@@ -18,10 +18,13 @@ class StudentDetails(GenericAPIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    # POST a new student
+# Create a new student
+class StudentCreateAPI(GenericAPIView):
+    serializer_class = StudentManagementSerializer
+
     def post(self, request):
         try:
-            serializer = self.get_serializer(data=request.data)
+            serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response({'message': 'Student added successfully!'}, status=status.HTTP_201_CREATED)
@@ -29,7 +32,26 @@ class StudentDetails(GenericAPIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    # PUT (update) a student by ID
+# Retrieve a single student
+class StudentDetailAPI(GenericAPIView):
+    serializer_class = StudentManagementSerializer
+    queryset = StudentManagement.objects.all()
+
+    def get(self, request, pk):
+        try:
+            student = self.get_queryset().get(pk=pk)
+            serializer = self.get_serializer(student)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except StudentManagement.DoesNotExist:
+            return Response({'error': 'Student not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# Update a student
+class StudentUpdateAPI(GenericAPIView):
+    serializer_class = StudentManagementSerializer
+    queryset = StudentManagement.objects.all()
+
     def put(self, request, pk):
         try:
             student = self.get_queryset().get(pk=pk)
@@ -43,7 +65,11 @@ class StudentDetails(GenericAPIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    # DELETE a student by ID
+# Delete a student
+class StudentDeleteAPI(GenericAPIView):
+    serializer_class = StudentManagementSerializer
+    queryset = StudentManagement.objects.all()
+
     def delete(self, request, pk):
         try:
             student = self.get_queryset().get(pk=pk)
